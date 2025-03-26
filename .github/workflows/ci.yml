@@ -10,56 +10,42 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Windows環境のみを選択
+    runs-on: windows-latest  # Windows環境で実行
 
     steps:
-      # コードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # PnP PowerShell モジュールをインストール
-      - name: Install PnP PowerShell module
+      - name: Install PnP.PowerShell Version 1.7.0
         run: |
-          Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser
+          Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser -RequiredVersion 1.7.0
 
-      # GitHub Secretsから証明書をデコード
-      - name: Decode certificate from GitHub Secrets
+      - name: Decode certificate from GitHub Secrets and save as .pfx
         run: |
+          # GitHub Secrets から証明書をデコードして .pfx ファイルとして保存
           $certBase64 = "${{ secrets.CERT_PFX }}"
           $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
-          
-          # 証明書をファイルとして保存
           [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
-          
-          Write-Host "Certificate saved as mycert.pfx"
 
-      # 証明書のパスとパスワードを指定してSharePointに接続
-      - name: Connect to SharePoint using certificate
+      - name: Connect to SharePoint Online using Certificate
         run: |
+          $siteUrl = "https://adstest2025.sharepoint.com"
           $tenantId = "${{ secrets.TENANT_ID }}"
           $clientId = "${{ secrets.CLIENT_ID }}"
+          $certificatePath = "mycert.pfx"
+          $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+
+          # 証明書を使用して PnP PowerShell で接続
+          Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
+
+      - name: Run Tests
+        run: |
+          # テスト実行ステップ
+          Import-Module -Name "$PSScriptRoot\Functions.psm1"
           $siteUrl = "https://adstest2025.sharepoint.com"
+          $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
+          $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
           
-          # 証明書を使用してSharePointに接続
-          Connect-PnPOnline -Url $siteUrl -ClientId $clientId -TenantId $tenantId -CertificatePath "mycert.pfx" -CertificatePassword $certPassword
-          
-          Write-Host "Connected to SharePoint site: $siteUrl"
-
-      # Pesterモジュールをインストール
-      - name: Install Pester module
-        run: |
-          Install-Module -Name Pester -Force -SkipPublisherCheck
-
-      # テストを実行してカバレッジレポートを生成
-      - name: Run tests and generate coverage report
-        run: |
-          $config = New-PesterConfiguration
-          $config.Run.Path = ".\Functions.Tests.ps1"
-          $config.CodeCoverage.Enabled = $true
-          $config.CodeCoverage.Path = ".\Functions.psm1"
-          Invoke-Pester -Configuration $config
-
-      # カバレッジレポートをCodecovにアップロード
       - name: Upload coverage report to Codecov
         run: |
           .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -R tmadvs/test0326
