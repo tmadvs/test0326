@@ -15,9 +15,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2  # バージョンをv2に変更
-
       - name: Install Pester module
         run: |
           Install-Module -Name Pester -Force -SkipPublisherCheck
@@ -25,13 +22,13 @@ jobs:
       - name: Run tests and generate coverage report
         run: |
           $config = New-PesterConfiguration
-          $config.Run.Path = ".\Functions.Tests.ps1"
+          $config.Run.Path = './Functions.Tests.ps1'
           $config.CodeCoverage.Enabled = $true
-          $config.CodeCoverage.Path = ".\Functions.psm1"
+          $config.CodeCoverage.Path = './Functions.psm1'
           Invoke-Pester -Configuration $config
 
       - name: Upload coverage report to Codecov
         run: |
-          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f "C:\AIPtest\ユニットテスト\動いてるやつ\coverage.xml" -R tmadvs/test0326
+          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -R tmadvs/test0326
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
