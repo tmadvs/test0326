@@ -50,7 +50,11 @@ jobs:
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
           $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
           $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
-          
+
+      - name: Install Codecov CLI
+        run: |
+          Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -OutFile codecov.exe
+
       - name: Upload coverage report to Codecov
         run: |
           .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
