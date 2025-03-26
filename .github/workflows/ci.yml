@@ -13,45 +13,46 @@ jobs:
     runs-on: windows-latest  # Windows環境のみを選択
 
     steps:
-      # ソースコードをクローン
+      # コードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # PnP PowerShellモジュールをインストール
+      # PnP PowerShell モジュールをインストール
       - name: Install PnP PowerShell module
         run: |
-          Install-Module -Name PnP.PowerShell -Force -AllowClobber
+          Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser
 
-      # Base64でエンコードされた証明書をデコードして保存
-      - name: Decode and install the certificate
+      # GitHub Secretsから証明書をデコード
+      - name: Decode certificate from GitHub Secrets
         run: |
-          # GitHub Secretsから証明書をデコード
           $certBase64 = "${{ secrets.CERT_PFX }}"
           $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
-          # デコードされた証明書をファイルとして保存
+          
+          # 証明書をファイルとして保存
           [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
+          
+          Write-Host "Certificate saved as mycert.pfx"
 
-      # SharePointに接続
+      # 証明書のパスとパスワードを指定してSharePointに接続
       - name: Connect to SharePoint using certificate
         run: |
-          # 証明書のパスとパスワードを指定
-          $certPath = "mycert.pfx"
-          $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
-          # 証明書をロード
-          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $certPassword)
-          
-          # PnP.PowerShellを使ってSharePointに接続
           $tenantId = "${{ secrets.TENANT_ID }}"
           $clientId = "${{ secrets.CLIENT_ID }}"
           $siteUrl = "https://adstest2025.sharepoint.com"
-          Connect-PnPOnline -Url $siteUrl -ClientId $clientId -TenantId $tenantId -Certificate $cert
+          
+          # 証明書を使用してSharePointに接続
+          Connect-PnPOnline -Url $siteUrl -ClientId $clientId -TenantId $tenantId -CertificatePath "mycert.pfx" -CertificatePassword $certPassword
           
           Write-Host "Connected to SharePoint site: $siteUrl"
 
-      # Pesterテストの実行
-      - name: Run Pester tests
+      # Pesterモジュールをインストール
+      - name: Install Pester module
         run: |
-          # Pesterテストの設定と実行
+          Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      # テストを実行してカバレッジレポートを生成
+      - name: Run tests and generate coverage report
+        run: |
           $config = New-PesterConfiguration
           $config.Run.Path = ".\Functions.Tests.ps1"
           $config.CodeCoverage.Enabled = $true
