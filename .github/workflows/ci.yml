@@ -50,7 +50,13 @@ jobs:
               exit 1
           }
 
+          # SharePoint への接続が確立されていることを確認する
+          Write-Host "SharePointに接続しています..."
           $siteUrl = "https://adstest2025.sharepoint.com"
+          # ここで接続確認
+          Connect-PnPOnline -Url $siteUrl -ErrorAction Stop
+          
+          # テスト実行
           $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
           $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
 
