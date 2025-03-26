@@ -4,10 +4,12 @@ BeforeAll {
 
     # SharePointサイトに接続
     $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = "${{ secrets.TENANT_ID }}"
-    $clientId = "${{ secrets.CLIENT_ID }}"
+    $tenantId = $env:TENANT_ID  # 環境変数から取得
+    $clientId = $env:CLIENT_ID  # 環境変数から取得
     $certificatePath = "mycert.pfx"
-    $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+    $certificatePassword = $env:CERT_PASSWORD  # 環境変数から取得
+
+    # 証明書を使用して PnP PowerShell で接続
     Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
     Write-Host "Connected to SharePoint site: $siteUrl"
 }
