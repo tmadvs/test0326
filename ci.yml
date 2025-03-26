@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up PowerShell
-        uses: actions/setup-powershell@v2  # Windows環境用にv2に変更
+        uses: actions/setup-powershell@v1  # Windows環境用にv2に変更
 
       - name: Install Pester module
         run: |
