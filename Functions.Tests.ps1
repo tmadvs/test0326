@@ -1,14 +1,13 @@
 # 同じディレクトリにあるモジュールを呼び出してインポートする
-#事前にShatrePointに接続している状態
 BeforeAll {
-    Import-Module -Name "$PSScriptRoot\Functions.psm1"
+    Import-Module -Name "./Functions.psm1"
 
     # SharePointサイトに接続
     $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = "da31fa32-ae12-4bf7-97f0-021837c11fec"
-    $clientId = "b5b85d9f-12b8-4575-80d9-b2d366ef49c8"
-    $certificatePath = "C:\AIPtest\test0310app.pfx"
-    $certificatePassword = "test0310"
+    $tenantId = "${{ secrets.TENANT_ID }}"
+    $clientId = "${{ secrets.CLIENT_ID }}"
+    $certificatePath = "mycert.pfx"
+    $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
     Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
     Write-Host "Connected to SharePoint site: $siteUrl"
 }
