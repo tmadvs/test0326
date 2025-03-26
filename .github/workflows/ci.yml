@@ -40,12 +40,20 @@ jobs:
 
       - name: Run Tests
         run: |
-          # テスト実行ステップ
-          Import-Module -Name "$PSScriptRoot\Functions.psm1"
+          # Functions.psm1 の絶対パスを指定
+          $modulePath = "D:\a\test0326\test0326\Functions.psm1"
+          try {
+              Import-Module -Name $modulePath -ErrorAction Stop
+          }
+          catch {
+              Write-Host "エラー: 'Functions.psm1' モジュールの読み込みに失敗しました。詳細: $_"
+              exit 1
+          }
+
           $siteUrl = "https://adstest2025.sharepoint.com"
           $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
           $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
-          
+
       - name: Upload coverage report to Codecov
         run: |
           .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
