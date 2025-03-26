@@ -37,13 +37,17 @@ jobs:
 
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-          get-pnpcontext
-          
+
       - name: Run Tests
         run: |
           # テスト実行ステップ
           Import-Module -Name "./Functions.psm1"
           $siteUrl = "https://adstest2025.sharepoint.com"
+          $tenantId = "${{ secrets.TENANT_ID }}"
+          $clientId = "${{ secrets.CLIENT_ID }}"
+          $certificatePath = "mycert.pfx"
+          $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+          Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
           $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
           $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
           
