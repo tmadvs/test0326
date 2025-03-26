@@ -15,8 +15,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2  # v2を指定
+     # - name: Set up PowerShell
+   #     uses: actions/setup-powershell@v2  # v2を指定
 
       - name: Install Pester module
         run: |
