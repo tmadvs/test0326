@@ -16,9 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2  # v2に変更
-
       - name: Install Pester module
         run: |
           Install-Module -Name Pester -Force -SkipPublisherCheck
@@ -33,6 +30,6 @@ jobs:
 
       - name: Upload coverage report to Codecov
         run: |
-          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
+          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -R tmadvs/test0326
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
