@@ -38,18 +38,18 @@ jobs:
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
 
-      - name: Run Tests
+      - name: Install Pester
         run: |
-          # テスト実行ステップ
-          Import-Module -Name "./Functions.psm1"
-          $siteUrl = "https://adstest2025.sharepoint.com"
-          $tenantId = "${{ secrets.TENANT_ID }}"
-          $clientId = "${{ secrets.CLIENT_ID }}"
-          $certificatePath = "mycert.pfx"
-          $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
-          Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-          $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
-          $result | Should -Not -BeNullOrEmpty -Because "Files should be returned from the SharePoint library"
+          Install-Module -Name Pester -Force -SkipPublisherCheck
+
+      - name: Run Pester Tests
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./Functions.Tests.ps1"
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.OutputFormat = "JaCoCo"
+          $config.CodeCoverage.OutputPath = "./coverage.xml"
+          Invoke-Pester -Configuration $config
 
       - name: Install Codecov CLI
         run: |
