@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest  # Windows環境で実行
+    runs-on: windows-latest  # Windowsランナーに変更
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
