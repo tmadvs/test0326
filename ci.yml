@@ -16,8 +16,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up PowerShell
-        uses: actions/setup-powershell@v2  # v1からv2に変更
+      - name: Install PowerShell 5.1 manually
+        run: |
+          $ErrorActionPreference = "Stop"  # エラーが発生した場合に即座に停止
+          
+          # PowerShell 5.1のインストーラーURL
+          $url = "https://github.com/PowerShell/PowerShell/releases/download/v5.1.0.0/PowerShell-5.1.0-win-pscore-x64.msi"
+          
+          # インストーラーを一時ディレクトリにダウンロード
+          $msiPath = "C:\temp\PowerShell-5.1.0-win-pscore-x64.msi"
+          Invoke-WebRequest -Uri $url -OutFile $msiPath
+          
+          # MSI インストーラーで PowerShell 5.1 をインストール
+          Start-Process msiexec.exe -ArgumentList "/i", $msiPath, "/quiet", "/norestart" -Wait
+          
+          # インストール後にバージョン確認
+          $psVersion = (Get-Command powershell).FileVersionInfo.ProductVersion
+          Write-Host "PowerShell version installed: $psVersion"
 
       - name: Install Pester module
         run: |
