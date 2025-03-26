@@ -1,39 +1,38 @@
-name: CI
+name: PowerShell CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: windows-latest  # Windows環境のみを選択
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up PowerShell
-      uses: actions/setup-powershell@v1
+      - name: Set up PowerShell
+        uses: actions/setup-powershell@v2  # v2に変更
 
-    - name: Install Pester
-      run: Install-Module -Name Pester -Force -SkipPublisherCheck
+      - name: Install Pester module
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck
 
-    - name: Install PSScriptAnalyzer
-      run: Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
+      - name: Run tests and generate coverage report
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = ".\Functions.Tests.ps1"
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.Path = ".\Functions.psm1"
+          Invoke-Pester -Configuration $config
 
-    - name: Run Pester tests
-      run: |
-        $PesterPreference = New-PesterConfiguration
-        $PesterPreference.Run.Path = ".\Functions.Tests.ps1"
-        $PesterPreference.CodeCoverage.Enabled = $true
-        $PesterPreference.CodeCoverage.Path = ".\Functions.psm1"
-        Invoke-Pester -Configuration $PesterPreference
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
+      - name: Upload coverage report to Codecov
+        run: |
+          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
