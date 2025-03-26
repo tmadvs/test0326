@@ -37,7 +37,7 @@ jobs:
 
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-          get-pnp-context
+          get-pnpcontext
           
       - name: Run Tests
         run: |
