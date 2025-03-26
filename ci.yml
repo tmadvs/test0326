@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Windows環境を指定
+    runs-on: windows-latest  # Windows環境のみで実行
 
     steps:
       - name: Checkout code
