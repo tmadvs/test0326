@@ -10,13 +10,13 @@ on:
 
 jobs:
   test:
-    runs-on: windows-latest
+    runs-on: windows-latest  # Windows環境で実行
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up PowerShell
-        uses: actions/setup-powershell@v2 # PowerShellをセットアップ
+        uses: actions/setup-powershell@v2  # v2を指定
 
       - name: Install Pester module
         run: |
