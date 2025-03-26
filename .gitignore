@@ -1,0 +1,23 @@
+# PowerShell
+*.ps1
+*.psm1
+*.psd1
+
+# Ignore Pester test results
+TestResults/
+
+# Ignore PowerShell module build artifacts
+*.nupkg
+*.snupkg
+
+# Ignore PowerShell Gallery publish settings
+*.publishsettings
+
+# Ignore local configuration files
+*.ps1xml
+*.pssc
+*.psrc
+
+# Ignore sensitive information
+*.pfx
+*.cer
