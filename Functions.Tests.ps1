@@ -10,8 +10,10 @@ BeforeAll {
     # Base64エンコードされた証明書データ（環境変数または設定ファイルから取得）
     $base64Cert = $env:BASE64_CERTIFICATE  # GitHub ActionsやCIツールの環境変数に格納
 
+    # 一時ファイルの保存先を変更 (環境変数 $env:TEMP を使用)
+    $certificatePath = Join-Path -Path $env:TEMP -ChildPath "temp_cert.pfx"
+
     # Base64データをバイト配列に復号し、一時的な証明書ファイルに保存
-    $certificatePath = "C:\AIPtest\temp_cert.pfx"
     [IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($base64Cert))
 
     # 証明書パスワード（環境変数や設定ファイルから取得）
@@ -28,6 +30,7 @@ BeforeAll {
         throw $_
     }
 }
+
 
 
 
