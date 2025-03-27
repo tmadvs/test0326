@@ -1,24 +1,25 @@
 # BeforeAll で接続前に環境変数の確認を行う
-BeforeAll {
+#BeforeAll {
+Import-Module -Name "\Functions.psm1"
     # 環境変数から値を取得
-    $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = $env:TENANT_ID
-    $clientId = $env:CLIENT_ID
-    $certificatePath = "mycert.pfx"
-    $certificatePassword = $env:CERT_PASSWORD
+    #$siteUrl = "https://adstest2025.sharepoint.com"
+   # $tenantId = $env:TENANT_ID
+   # $clientId = $env:CLIENT_ID
+  #  $certificatePath = "mycert.pfx"
+   # $certificatePassword = $env:CERT_PASSWORD
 
     # 環境変数が設定されているか確認
-    if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
-        Write-Host "必要な環境変数が設定されていません。"
-        Write-Host "TENANT_ID: $tenantId"
-        Write-Host "CLIENT_ID: $clientId"
-        Write-Host "CERT_PASSWORD: $certificatePassword"
-        throw "環境変数が不足しています。"
+   # if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+    #    Write-Host "必要な環境変数が設定されていません。"
+   #     Write-Host "TENANT_ID: $tenantId"
+   #     Write-Host "CLIENT_ID: $clientId"
+   #     Write-Host "CERT_PASSWORD: $certificatePassword"
+   #     throw "環境変数が不足しています。"
     }
 
-    Write-Host "TENANT_ID: $tenantId"
-    Write-Host "CLIENT_ID: $clientId"
-    Write-Host "CERT_PASSWORD: $certificatePassword"
+ #   Write-Host "TENANT_ID: $tenantId"
+  #  Write-Host "CLIENT_ID: $clientId"
+  #  Write-Host "CERT_PASSWORD: $certificatePassword"
 
     # 接続処理
     try {
