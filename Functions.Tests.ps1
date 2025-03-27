@@ -1,3 +1,26 @@
+# モジュールがインポートされているか確認し、必要に応じてインポート
+BeforeAll {
+    # Functions.psm1 モジュールのインポート（必要に応じて変更）
+    if (Test-Path "./Functions.psm1") {
+        Write-Host "Importing Functions.psm1"
+        Import-Module -Name "./Functions.psm1" -Force
+    } else {
+        Write-Host "Error: Functions.psm1 not found!"
+        throw "Functions.psm1 not found!"
+    }
+
+    # モジュールのインポート確認
+    if (-not (Get-Command -Name "Get-SpoFiles" -ErrorAction SilentlyContinue)) {
+        Write-Host "Error: Get-SpoFiles cmdlet not found!"
+        throw "Get-SpoFiles cmdlet not found!"
+    }
+    
+    if (-not (Get-Command -Name "Get-SPOItems" -ErrorAction SilentlyContinue)) {
+        Write-Host "Error: Get-SPOItems cmdlet not found!"
+        throw "Get-SPOItems cmdlet not found!"
+    }
+}
+
 # テスト定義
 Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
