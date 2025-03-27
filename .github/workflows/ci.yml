@@ -24,21 +24,24 @@ jobs:
         run: |
           $certBase64 = "${{ secrets.CERT_PFX }}"
           $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
-          [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
+          $certificatePath = Join-Path -Path $env:TEMP -ChildPath "temp_cert.pfx"
+          [System.IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($certBase64))
+
+          # 追加: ファイルパスを確認
+          Write-Host "証明書ファイルパス: $certificatePath"
+
+          if (-not (Test-Path $certificatePath)) {
+            Write-Host "証明書ファイルが生成されませんでした。"
+            exit 1
+          }
+          Write-Host "証明書ファイルが正常に生成されました。"
 
       - name: Connect to SharePoint Online using Certificate
         run: |
           $siteUrl = "https://adstest2025.sharepoint.com"
           $tenantId = "${{ secrets.TENANT_ID }}"
           $clientId = "${{ secrets.CLIENT_ID }}"
-          $certificatePath = "mycert.pfx"
           $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
-
-          # 環境変数の確認
-          if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
-              Write-Host "必要な環境変数が設定されていません。TENANT_ID: $tenantId, CLIENT_ID: $clientId, CERT_PASSWORD: $certificatePassword"
-              throw "環境変数が不足しています。"
-          }
 
           # 接続処理
           try {
