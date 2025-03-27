@@ -1,25 +1,3 @@
-# 同じディレクトリにあるモジュールを呼び出してインポートする
-BeforeAll {
-    if (-not $env:TENANT_ID) { Write-Host "Error: TENANT_ID is null or empty" }
-    if (-not $env:CLIENT_ID) { Write-Host "Error: CLIENT_ID is null or empty" }
-    if (-not $env:CERT_PASSWORD) { Write-Host "Error: CERT_PASSWORD is null or empty" }
-
-    Write-Host "TENANT_ID: $env:TENANT_ID"
-    Write-Host "CLIENT_ID: $env:CLIENT_ID"
-    Write-Host "CERT_PASSWORD: $env:CERT_PASSWORD"
-
-    Import-Module -Name "./Functions.psm1"
-
-    $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = $env:TENANT_ID
-    $clientId = $env:CLIENT_ID
-    $certificatePath = "mycert.pfx"
-    $certificatePassword = $env:CERT_PASSWORD
-
-    Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-    Write-Host "Connected to SharePoint site: $siteUrl"
-}
-
 # テスト定義
 Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
