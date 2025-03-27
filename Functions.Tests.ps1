@@ -1,30 +1,29 @@
+# Functions.Tests.ps1
+
+# PnP PowerShellをインポート
+Import-Module PnP.PowerShell
+
+# BeforeAll: 接続処理
 BeforeAll {
-    # Functions.psm1 をインポート
-    Import-Module -Name "./Functions.psm1"
-
-    # 固定の接続情報
-    $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = "da31fa32-ae12-4bf7-97f0-021837c11fec"
-    $clientId = "b5b85d9f-12b8-4575-80d9-b2d366ef49c8"
+    # GitHub ActionsのSecretsから取得した情報
+    $siteUrl = "https://adstest2025.sharepoint.com"  # 必要に応じてURLを変更
+    $tenantId = $env:TENANT_ID
+    $clientId = $env:CLIENT_ID
+    $certificatePassword = $env:CERT_PASSWORD
     
-    # Base64エンコードされた証明書データ（環境変数または設定ファイルから取得）
-    $base64Cert = $env:BASE64_CERTIFICATE  # GitHub ActionsやCIツールの環境変数に格納
-
-    # 一時ファイルの保存先を変更 (環境変数 $env:TEMP を使用)
+    # GitHub ActionsのTEMPディレクトリに証明書を保存
     $certificatePath = Join-Path -Path $env:TEMP -ChildPath "temp_cert.pfx"
 
-    # Base64データをバイト配列に復号し、一時的な証明書ファイルに保存
-    [IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($base64Cert))
+    # 証明書が生成されたか確認
+    if (-not (Test-Path $certificatePath)) {
+        Write-Host "証明書ファイルが生成されていません: $certificatePath"
+        exit 1
+    }
 
-    # 証明書パスワード（環境変数や設定ファイルから取得）
-    $certificatePassword = "test0310"
-
-    # 接続処理
+    # SharePointに接続
     try {
-        # SharePoint Online へ接続
-        Write-Host "接続中... Site URL: $siteUrl, Tenant: $tenantId, Client ID: $clientId"
         Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-        Write-Host "SharePoint Online に接続しました。"
+        Write-Host "Connected to SharePoint site: $siteUrl"
     } catch {
         Write-Host "接続エラー: $($_.Exception.Message)"
         throw $_
@@ -36,7 +35,7 @@ Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
         It "should retrieve files from a SharePoint library" {
             # 正常系テスト: SharePointライブラリからファイルを取得する
-            # 期待する結果: ライブラリからファイルが取得されること
+            $siteUrl = "https://adstest2025.sharepoint.com"
             $libname = "testlib1"
             try {
                 $result = Get-SpoFiles -siteUrl $siteUrl -libname $libname
@@ -56,7 +55,7 @@ Describe "SPO-Operations モジュールのテスト" {
 
         It "should retrieve items from a SharePoint list" {
             # 正常系テスト: SharePointリストからアイテムを取得する
-            # 期待する結果: リストからアイテムが取得されること
+            $siteUrl = "https://adstest2025.sharepoint.com"
             $listName = "Applist"
             try {
                 $result = Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved"
@@ -77,6 +76,7 @@ Describe "SPO-Operations モジュールのテスト" {
 
     Context "異常系" {
         It "should throw an error if the library does not exist" {
+            $siteUrl = "https://adstest2025.sharepoint.com"
             $libname = "NonExistentLibrary"
             try {
                 Get-SpoFiles -siteUrl $siteUrl -libname $libname -ErrorAction Stop
@@ -92,6 +92,7 @@ Describe "SPO-Operations モジュールのテスト" {
         }
 
         It "should throw an error if the list does not exist" {
+            $siteUrl = "https://adstest2025.sharepoint.com"
             $listName = "NonExistentList"
             try {
                 Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved" -ErrorAction Stop
