@@ -34,25 +34,20 @@ jobs:
           $certificatePath = "mycert.pfx"
           $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
 
-          # 証明書を使用して PnP PowerShell で接続
+          # 環境変数の確認
           if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
               Write-Host "必要な環境変数が設定されていません。TENANT_ID: $tenantId, CLIENT_ID: $clientId, CERT_PASSWORD: $certificatePassword"
               throw "環境変数が不足しています。"
           }
 
-          Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-
-          # 接続確認
-          $context = Get-PnPContext
-          if ($null -eq $context) {
-              Write-Host "接続確認エラー: SharePointに接続できていません。"
-              throw "接続に失敗しました。"
+          # 接続処理
+          try {
+              Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
+              Write-Host "SharePoint Online に接続しました。"
+          } catch {
+              Write-Host "接続エラー: $($_.Exception.Message)"
+              throw $_
           }
-          Write-Host "SharePoint Online に接続確認成功しました。"
-        env:
-          TENANT_ID: ${{ secrets.TENANT_ID }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
       - name: Install Pester
         run: |
