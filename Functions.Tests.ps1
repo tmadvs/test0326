@@ -4,6 +4,10 @@ BeforeAll {
     if (-not $env:CLIENT_ID) { Write-Host "Error: CLIENT_ID is null or empty" }
     if (-not $env:CERT_PASSWORD) { Write-Host "Error: CERT_PASSWORD is null or empty" }
 
+    Write-Host "TENANT_ID: $env:TENANT_ID"
+    Write-Host "CLIENT_ID: $env:CLIENT_ID"
+    Write-Host "CERT_PASSWORD: $env:CERT_PASSWORD"
+
     Import-Module -Name "./Functions.psm1"
 
     $siteUrl = "https://adstest2025.sharepoint.com"
