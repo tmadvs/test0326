@@ -1,10 +1,10 @@
 BeforeAll {
-    # 前段で使用した接続構文を再利用
+    # GitHub Actions から渡された環境変数を使用して接続
     $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = "${{ secrets.TENANT_ID }}"
-    $clientId = "${{ secrets.CLIENT_ID }}"
+    $tenantId = $env:TENANT_ID
+    $clientId = $env:CLIENT_ID
     $certificatePath = "mycert.pfx"
-    $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+    $certificatePassword = $env:CERT_PASSWORD
 
     Write-Host "TENANT_ID: $tenantId"
     Write-Host "CLIENT_ID: $clientId"
