@@ -36,7 +36,14 @@ jobs:
 
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-          get-pnpcontext
+
+          # 接続確認
+          $context = Get-PnPContext
+          if ($null -eq $context) {
+              Write-Host "接続確認エラー: SharePointに接続できていません。"
+              throw "接続に失敗しました。"
+          }
+          Write-Host "SharePoint Online に接続確認成功しました。"
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
