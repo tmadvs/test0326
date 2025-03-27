@@ -1,5 +1,4 @@
-# 同じディレクトリにあるモジュールを呼び出してインポートする
-# 事前にSharePointに接続している状態
+# BeforeAll で接続前に環境変数の確認を行う
 BeforeAll {
     # 環境変数から値を取得
     $siteUrl = "https://adstest2025.sharepoint.com"
@@ -7,6 +6,15 @@ BeforeAll {
     $clientId = $env:CLIENT_ID
     $certificatePath = "mycert.pfx"
     $certificatePassword = $env:CERT_PASSWORD
+
+    # 環境変数が設定されているか確認
+    if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+        Write-Host "必要な環境変数が設定されていません。"
+        Write-Host "TENANT_ID: $tenantId"
+        Write-Host "CLIENT_ID: $clientId"
+        Write-Host "CERT_PASSWORD: $certificatePassword"
+        throw "環境変数が不足しています。"
+    }
 
     Write-Host "TENANT_ID: $tenantId"
     Write-Host "CLIENT_ID: $clientId"
@@ -21,14 +29,6 @@ BeforeAll {
         Write-Host "接続エラー: $($_.Exception.Message)"
         throw $_
     }
-
-    # 接続確認
-    $context = Get-PnPContext
-    if ($null -eq $context) {
-        Write-Host "接続確認エラー: SharePointに接続できていません。"
-        throw "接続に失敗しました。"
-    }
-    Write-Host "SharePoint Online に接続確認成功しました。"
 }
 
 # テスト定義
