@@ -1,36 +1,39 @@
-# BeforeAll で接続前に環境変数の確認を行う
-#BeforeAll {
-Import-Module -Name "\Functions.psm1"
+BeforeAll {
+    # Import-Module の実行
+    Import-Module -Name "Functions.psm1"
+
+    # 以下の部分はコメントアウトします
     # 環境変数から値を取得
     #$siteUrl = "https://adstest2025.sharepoint.com"
-   # $tenantId = $env:TENANT_ID
-   # $clientId = $env:CLIENT_ID
-  #  $certificatePath = "mycert.pfx"
-   # $certificatePassword = $env:CERT_PASSWORD
+    #$tenantId = $env:TENANT_ID
+    #$clientId = $env:CLIENT_ID
+    #$certificatePath = "mycert.pfx"
+    #$certificatePassword = $env:CERT_PASSWORD
 
     # 環境変数が設定されているか確認
-   # if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+    #if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
     #    Write-Host "必要な環境変数が設定されていません。"
-   #     Write-Host "TENANT_ID: $tenantId"
-   #     Write-Host "CLIENT_ID: $clientId"
-   #     Write-Host "CERT_PASSWORD: $certificatePassword"
-   #     throw "環境変数が不足しています。"
-    }
+    #    Write-Host "TENANT_ID: $tenantId"
+    #    Write-Host "CLIENT_ID: $clientId"
+    #    Write-Host "CERT_PASSWORD: $certificatePassword"
+    #    throw "環境変数が不足しています。"
+    #}
 
- #   Write-Host "TENANT_ID: $tenantId"
-  #  Write-Host "CLIENT_ID: $clientId"
-  #  Write-Host "CERT_PASSWORD: $certificatePassword"
+    #Write-Host "TENANT_ID: $tenantId"
+    #Write-Host "CLIENT_ID: $clientId"
+    #Write-Host "CERT_PASSWORD: $certificatePassword"
 
     # 接続処理
-    try {
-        Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-        Write-Host "SharePoint Online に接続しました。"
-    }
-    catch {
-        Write-Host "接続エラー: $($_.Exception.Message)"
-        throw $_
-    }
+    #try {
+    #    Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
+    #    Write-Host "SharePoint Online に接続しました。"
+    #}
+    #catch {
+    #    Write-Host "接続エラー: $($_.Exception.Message)"
+    #    throw $_
+    #}
 }
+
 
 # テスト定義
 Describe "SPO-Operations モジュールのテスト" {
