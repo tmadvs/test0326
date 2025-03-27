@@ -31,16 +31,12 @@ BeforeAll {
     }
 }
 
-
-
-
 # テスト定義
 Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
         It "should retrieve files from a SharePoint library" {
             # 正常系テスト: SharePointライブラリからファイルを取得する
             # 期待する結果: ライブラリからファイルが取得されること
-            $siteUrl = "https://adstest2025.sharepoint.com"
             $libname = "testlib1"
             try {
                 $result = Get-SpoFiles -siteUrl $siteUrl -libname $libname
@@ -61,7 +57,6 @@ Describe "SPO-Operations モジュールのテスト" {
         It "should retrieve items from a SharePoint list" {
             # 正常系テスト: SharePointリストからアイテムを取得する
             # 期待する結果: リストからアイテムが取得されること
-            $siteUrl = "https://adstest2025.sharepoint.com"
             $listName = "Applist"
             try {
                 $result = Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved"
@@ -82,7 +77,6 @@ Describe "SPO-Operations モジュールのテスト" {
 
     Context "異常系" {
         It "should throw an error if the library does not exist" {
-            $siteUrl = "https://adstest2025.sharepoint.com"
             $libname = "NonExistentLibrary"
             try {
                 Get-SpoFiles -siteUrl $siteUrl -libname $libname -ErrorAction Stop
@@ -98,7 +92,6 @@ Describe "SPO-Operations モジュールのテスト" {
         }
 
         It "should throw an error if the list does not exist" {
-            $siteUrl = "https://adstest2025.sharepoint.com"
             $listName = "NonExistentList"
             try {
                 Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved" -ErrorAction Stop
