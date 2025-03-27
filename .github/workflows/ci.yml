@@ -13,41 +13,32 @@ jobs:
     runs-on: windows-latest  # Windows環境で実行
 
     steps:
-      # コードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # PnP.PowerShellのインストール
       - name: Install PnP.PowerShell Version 1.7.0
         run: |
           Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser -RequiredVersion 1.7.0
 
-      # GitHub Secrets から証明書をデコードして保存
       - name: Decode certificate from GitHub Secrets and save as .pfx
         run: |
-          # GitHub SecretsからBase64エンコードされた証明書データを取得
           $certBase64 = "${{ secrets.CERT_PFX }}"
           $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
+          [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
 
-          # 一時ファイルに証明書を保存
-          $certificatePath = Join-Path -Path $env:TEMP -ChildPath "temp_cert.pfx"
-          [System.IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($certBase64))
-
-          Write-Host "証明書ファイルパス: $certificatePath"
-
-          if (-not (Test-Path $certificatePath)) {
-              Write-Host "証明書ファイルが生成されませんでした。"
-              exit 1
-          }
-          Write-Host "証明書ファイルが正常に生成されました。"
-
-      # SharePoint Online への接続
       - name: Connect to SharePoint Online using Certificate
         run: |
           $siteUrl = "https://adstest2025.sharepoint.com"
           $tenantId = "${{ secrets.TENANT_ID }}"
           $clientId = "${{ secrets.CLIENT_ID }}"
+          $certificatePath = "mycert.pfx"
           $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+
+          # 環境変数の確認
+          if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+              Write-Host "必要な環境変数が設定されていません。TENANT_ID: $tenantId, CLIENT_ID: $clientId, CERT_PASSWORD: $certificatePassword"
+              throw "環境変数が不足しています。"
+          }
 
           # 接続処理
           try {
@@ -62,12 +53,10 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-      # Pesterのインストール
       - name: Install Pester
         run: |
           Install-Module -Name Pester -Force -SkipPublisherCheck
 
-      # Pesterテストの実行
       - name: Run Pester Tests
         run: |
           $config = New-PesterConfiguration
