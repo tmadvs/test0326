@@ -1,26 +1,17 @@
-# BeforeAll で接続設定と変数定義
 BeforeAll {
-    Import-Module -Name "$PSScriptRoot\Functions.psm1"
-
-    # SharePointサイトに接続
-    $global:siteUrl = "https://adstest2025.sharepoint.com"
-    $global:tenantId = "da31fa32-ae12-4bf7-97f0-021837c11fec"
-    $global:clientId = "b5b85d9f-12b8-4575-80d9-b2d366ef49c8"
-    $global:certificatePath = "C:\AIPtest\test0310app.pfx"
-    $global:certificatePassword = "test0310"
-    
-    Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-    Write-Host "Connected to SharePoint site: $siteUrl"
+    # 接続処理はすでに前段で行っているため、再度行わない
+    Write-Host "Using existing connection to SharePoint."
+    get-pnpcontext
 }
 
 # テスト定義
 Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
         It "should retrieve files from a SharePoint library" {
-            # 正常系テスト: SharePointライブラリからファイルを取得する
-            Write-Host "Testing Get-SpoFiles with siteUrl: $siteUrl, libname: testlib1"
+            $libname = "testlib1"
             try {
-                $result = Get-SpoFiles -siteUrl $siteUrl -libname "testlib1"
+                # すでに接続済みの状態でSharePointからファイルを取得
+                $result = Get-SpoFiles -siteUrl $siteUrl -libname $libname
                 Write-Host "Retrieved Files: $result"
                 if ($result.Count -gt 0) {
                     Write-Host "取得したファイル:"
@@ -36,10 +27,10 @@ Describe "SPO-Operations モジュールのテスト" {
         }
 
         It "should retrieve items from a SharePoint list" {
-            # 正常系テスト: SharePointリストからアイテムを取得する
-            Write-Host "Testing Get-SPOItems with siteUrl: $siteUrl, listName: Applist"
+            $listName = "Applist"
             try {
-                $result = Get-SPOItems -siteUrl $siteUrl -listName "Applist" -status "approved"
+                # すでに接続済みの状態でSharePointからアイテムを取得
+                $result = Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved"
                 Write-Host "Retrieved Items: $result"
                 if ($result.Count -gt 0) {
                     Write-Host "取得したアイテム:"
@@ -59,7 +50,6 @@ Describe "SPO-Operations モジュールのテスト" {
         It "should throw an error if the library does not exist" {
             $libname = "NonExistentLibrary"
             try {
-                Write-Host "Testing Get-SpoFiles with non-existent library: $libname"
                 Get-SpoFiles -siteUrl $siteUrl -libname $libname -ErrorAction Stop
                 throw "エラー: ライブラリが存在しないはずですが、ファイルを取得できました。"
             } catch {
@@ -75,7 +65,6 @@ Describe "SPO-Operations モジュールのテスト" {
         It "should throw an error if the list does not exist" {
             $listName = "NonExistentList"
             try {
-                Write-Host "Testing Get-SPOItems with non-existent list: $listName"
                 Get-SPOItems -siteUrl $siteUrl -listName $listName -status "approved" -ErrorAction Stop
                 throw "エラー: リストが存在しないはずですが、アイテムを取得できました。"
             } catch {
