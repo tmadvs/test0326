@@ -1,10 +1,26 @@
 BeforeAll {
-    # 接続処理はすでに前段で行っているため、再度行わない
-    Write-Host "Using existing connection to SharePoint."
-    get-pnpcontext
+    # 前段で使用した接続構文を再利用
+    $siteUrl = "https://adstest2025.sharepoint.com"
+    $tenantId = "${{ secrets.TENANT_ID }}"
+    $clientId = "${{ secrets.CLIENT_ID }}"
+    $certificatePath = "mycert.pfx"
+    $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
+
+    Write-Host "TENANT_ID: $tenantId"
+    Write-Host "CLIENT_ID: $clientId"
+    Write-Host "CERT_PASSWORD: $certificatePassword"
+
+    # 証明書を使用して PnP PowerShell で接続
+    try {
+        Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
+        Write-Host "SharePoint Online に接続しました。"
+    }
+    catch {
+        Write-Host "接続エラー: $($_.Exception.Message)"
+        throw $_
+    }
 }
 
-# テスト定義
 Describe "SPO-Operations モジュールのテスト" {
     Context "正常系" {
         It "should retrieve files from a SharePoint library" {
