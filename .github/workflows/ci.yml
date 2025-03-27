@@ -22,7 +22,6 @@ jobs:
 
       - name: Decode certificate from GitHub Secrets and save as .pfx
         run: |
-          # GitHub Secrets から証明書をデコードして .pfx ファイルとして保存
           $certBase64 = "${{ secrets.CERT_PFX }}"
           $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
           [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
@@ -34,10 +33,6 @@ jobs:
           $clientId = "${{ secrets.CLIENT_ID }}"
           $certificatePath = "mycert.pfx"
           $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
-
-          Write-Host "TENANT_ID: $tenantId"
-          Write-Host "CLIENT_ID: $clientId"
-          Write-Host "CERT_PASSWORD: $certificatePassword"
 
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
@@ -59,13 +54,3 @@ jobs:
           $config.CodeCoverage.OutputFormat = "JaCoCo"
           $config.CodeCoverage.OutputPath = "./coverage.xml"
           Invoke-Pester -Configuration $config
-
-      - name: Install Codecov CLI
-        run: |
-          Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -OutFile codecov.exe
-
-      - name: Upload coverage report to Codecov
-        run: |
-          .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
