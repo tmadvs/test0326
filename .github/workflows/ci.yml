@@ -38,6 +38,11 @@ jobs:
           # 証明書を使用して PnP PowerShell で接続
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
 
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
+
       - name: Install Pester
         run: |
           Install-Module -Name Pester -Force -SkipPublisherCheck
@@ -60,4 +65,3 @@ jobs:
           .\codecov.exe -t ${{ secrets.CODECOV_TOKEN }} -f './coverage.xml' -r tmadvs/test0326
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
