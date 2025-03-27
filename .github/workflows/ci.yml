@@ -48,6 +48,10 @@ jobs:
               Write-Host "接続エラー: $($_.Exception.Message)"
               throw $_
           }
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
       - name: Install Pester
         run: |
