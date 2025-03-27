@@ -21,6 +21,14 @@ BeforeAll {
         Write-Host "接続エラー: $($_.Exception.Message)"
         throw $_
     }
+
+    # 接続確認
+    $context = Get-PnPContext
+    if ($null -eq $context) {
+        Write-Host "接続確認エラー: SharePointに接続できていません。"
+        throw "接続に失敗しました。"
+    }
+    Write-Host "SharePoint Online に接続確認成功しました。"
 }
 
 # テスト定義
