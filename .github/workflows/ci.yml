@@ -10,75 +10,58 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-latest  # Windows環境で実行
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up PowerShell
-      uses: actions/setup-powershell@v2
+      - name: Install PnP.PowerShell Version 1.7.0
+        run: |
+          Install-Module -Name PnP.PowerShell -Force -Scope CurrentUser -RequiredVersion 1.7.0
 
-    - name: Set up secrets as environment variables
-      run: |
-        echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
-        echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> $GITHUB_ENV
-        echo "CERT_PASSWORD=${{ secrets.CERT_PASSWORD }}" >> $GITHUB_ENV
-        echo "CERT_PFX=${{ secrets.CERT_PFX }}" >> $GITHUB_ENV
+      - name: Decode certificate from GitHub Secrets and save as .pfx
+        run: |
+          $certBase64 = "${{ secrets.CERT_PFX }}"
+          $certPassword = ConvertTo-SecureString "${{ secrets.CERT_PASSWORD }}" -AsPlainText -Force
+          [System.IO.File]::WriteAllBytes("mycert.pfx", [Convert]::FromBase64String($certBase64))
 
-    - name: Install required modules
-      run: |
-        Install-Module -Name PnP.PowerShell -Force -SkipPublisherCheck
-        Install-Module -Name Pester -Force -SkipPublisherCheck
+      - name: Connect to SharePoint Online using Certificate
+        run: |
+          $siteUrl = "https://adstest2025.sharepoint.com"
+          $tenantId = "${{ secrets.TENANT_ID }}"
+          $clientId = "${{ secrets.CLIENT_ID }}"
+          $certificatePath = "mycert.pfx"
+          $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
 
-    - name: Run tests
-      run: |
-        $siteUrl = "https://adstest2025.sharepoint.com"
-        $tenantId = $env:TENANT_ID
-        $clientId = $env:CLIENT_ID
-        $certificatePath = $env:CERT_PFX
-        $certificatePassword = $env:CERT_PASSWORD
-        
-        # 環境変数の確認
-        Write-Host "TENANT_ID: $tenantId"
-        Write-Host "CLIENT_ID: $clientId"
-        Write-Host "CERT_PASSWORD: $certificatePassword"
+          # 環境変数の確認
+          if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+              Write-Host "必要な環境変数が設定されていません。TENANT_ID: $tenantId, CLIENT_ID: $clientId, CERT_PASSWORD: $certificatePassword"
+              throw "環境変数が不足しています。"
+          }
 
-        if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
-            Write-Host "必要な環境変数が設定されていません。"
-            throw "環境変数が不足しています。"
-        }
+          # 接続処理
+          try {
+              Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
+              Write-Host "SharePoint Online に接続しました。"
+          } catch {
+              Write-Host "接続エラー: $($_.Exception.Message)"
+              throw $_
+          }
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
 
-        # 証明書ファイルが存在するか確認
-        if (-not (Test-Path $certificatePath)) {
-            Write-Host "証明書ファイルが見つかりません: $certificatePath"
-            throw "証明書ファイルが存在しません。"
-        }
+      - name: Install Pester
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck
 
-        # 接続処理
-        try {
-            Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
-            Write-Host "SharePoint Online に接続しました。"
-        } catch {
-            Write-Host "接続エラー: $($_.Exception.Message)"
-            throw $_
-        }
-
-        # Pester テストの実行
-        Describe "SharePoint Online Test" {
-            It "Should connect to SharePoint Online" {
-                $context = Get-PnPContext
-                $context | Should -Not -BeNull
-            }
-        }
-
-        # Pester テストの実行
-        Invoke-Pester -Configuration @{
-            RunPath = "./Functions.Tests.ps1"
-            CodeCoverage = @{
-                Enabled = $true
-                OutputFormat = "JaCoCo"
-                OutputPath = "./coverage.xml"
-            }
-        }
-
+      - name: Run Pester Tests
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = "./Functions.Tests.ps1"
+          $config.CodeCoverage.Enabled = $true
+          $config.CodeCoverage.OutputFormat = "JaCoCo"
+          $config.CodeCoverage.OutputPath = "./coverage.xml"
+          Invoke-Pester -Configuration $config
