@@ -2,16 +2,25 @@ BeforeAll {
     # Functions.psm1 をインポート
     Import-Module -Name "./Functions.psm1"
 
-    # 必要な環境変数を設定
+    # 固定の接続情報
     $siteUrl = "https://adstest2025.sharepoint.com"
-    $tenantId = $env:TENANT_ID
-    $clientId = $env:CLIENT_ID
-    $certificatePath = "mycert.pfx"
-    $certificatePassword = $env:CERT_PASSWORD
+    $tenantId = "da31fa32-ae12-4bf7-97f0-021837c11fec"
+    $clientId = "b5b85d9f-12b8-4575-80d9-b2d366ef49c8"
+    
+    # Base64エンコードされた証明書データ（環境変数または設定ファイルから取得）
+    $base64Cert = $env:BASE64_CERTIFICATE  # GitHub ActionsやCIツールの環境変数に格納
+
+    # Base64データをバイト配列に復号し、一時的な証明書ファイルに保存
+    $certificatePath = "C:\AIPtest\temp_cert.pfx"
+    [IO.File]::WriteAllBytes($certificatePath, [Convert]::FromBase64String($base64Cert))
+
+    # 証明書パスワード（環境変数や設定ファイルから取得）
+    $certificatePassword = "test0310"
 
     # 接続処理
     try {
         # SharePoint Online へ接続
+        Write-Host "接続中... Site URL: $siteUrl, Tenant: $tenantId, Client ID: $clientId"
         Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
         Write-Host "SharePoint Online に接続しました。"
     } catch {
@@ -19,6 +28,7 @@ BeforeAll {
         throw $_
     }
 }
+
 
 
 # テスト定義
