@@ -1,6 +1,6 @@
 BeforeAll {
     # Import-Module の実行
-    Import-Module -Name "Functions.psm1"
+    Import-Module -Name "./Functions.psm1"
 
     # 以下の部分はコメントアウトします
     # 環境変数から値を取得
