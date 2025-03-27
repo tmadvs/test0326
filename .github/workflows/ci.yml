@@ -35,6 +35,11 @@ jobs:
           $certificatePassword = "${{ secrets.CERT_PASSWORD }}"
 
           # 証明書を使用して PnP PowerShell で接続
+          if (-not $tenantId -or -not $clientId -or -not $certificatePassword) {
+              Write-Host "必要な環境変数が設定されていません。TENANT_ID: $tenantId, CLIENT_ID: $clientId, CERT_PASSWORD: $certificatePassword"
+              throw "環境変数が不足しています。"
+          }
+
           Connect-PnPOnline -Url $siteUrl -Tenant $tenantId -ClientId $clientId -CertificatePath $certificatePath -CertificatePassword (ConvertTo-SecureString -String $certificatePassword -AsPlainText -Force)
 
           # 接続確認
